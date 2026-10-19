@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Actions - ashish-avi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    colors: {
+                        github: {
+                            dark: '#0d1117',
+                            card: '#161b22',
+                            border: '#30363d',
+                            success: '#238636',
+                            successHover: '#2ea043',
+                            accent: '#58a6ff'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f17;
+            color: #e6edf3;
+            overflow-x: hidden;
+        }
+        /* Custom animated background gradient grid */
+        .tech-bg {
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(88, 166, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(35, 134, 54, 0.12) 0%, transparent 40%),
+                linear-gradient(to right, rgba(48, 54, 61, 0.15) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(48, 54, 61, 0.15) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+        }
+        /* Glow effects */
+        .glow-success {
+            box-shadow: 0 0 20px rgba(35, 134, 54, 0.3);
+        }
+        .glow-blue {
+            box-shadow: 0 0 25px rgba(88, 166, 255, 0.2);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b949e;
+        }
+    </style>
+</head>
+<body class="tech-bg min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- Top Navigation Bar resembling GitHub -->
+    <header class="border-b border-github-border bg-github-dark/80 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-github-card p-2 rounded-lg border border-github-border text-github-accent flex items-center justify-center">
+                <i class="fa-brands fa-github text-xl"></i>
+            </div>
+            <div>
+                <div class="text-xs text-slate-400 font-mono">Workflow Run</div>
+                <div class="font-semibold text-sm md:text-base flex items-center gap-2">
+                    <span class="text-github-accent hover:underline cursor-pointer">avi-patel/tech-portfolio</span>
+                    <span class="text-slate-500">/</span>
+                    <span class="text-white font-mono bg-github-border/50 px-2 py-0.5 rounded text-xs">ashish-avi.yml</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Workflow Succeeded
+            </span>
+            <button onclick="triggerWorkflow()" id="reRunBtn" class="bg-github-success hover:bg-github-successHover text-white text-xs md:text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-sm flex items-center gap-2 active:scale-95">
+                <i class="fa-solid fa-play text-xs"></i> Re-run all jobs
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+        
+        <!-- Workflow Overview Banner -->
+        <div class="bg-github-card border border-github-border rounded-xl p-6 mb-8 glow-blue relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl text-github-accent pointer-events-none">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="bg-blue-500/10 text-github-accent text-xs font-mono px-2.5 py-1 rounded border border-blue-500/20">workflow_dispatch</span>
+                        <span class="text-xs text-slate-400 font-mono"><i class="fa-regular fa-clock mr-1"></i> Triggered just now</span>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">Ashish & Avi Tech Pipeline</h1>
+                    <p class="text-slate-400 text-sm max-w-2xl">
+                        Automated runner configuration displaying greeting protocols, paternal and maternal lineage info, and geographical residence breakdown in Prayagraj, Uttar Pradesh.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <div class="bg-github-dark/80 border border-github-border rounded-lg px-4 py-2.5 text-center">
+                        <div class="text-xs text-slate-400 font-mono">Runner</div>
+                        <div class="text-sm font-semibold text-emerald-400 mt-0.5"><i class="fa-brands fa-ubuntu"></i> ubuntu-latest</div>
+                    </div>
+                    <div class="bg-github-dark/80 border border-github-border rounded-lg px-4 py-2.5 text-center">
+                        <div class="text-xs text-slate-400 font-mono">Total Jobs</div>
+                        <div class="text-sm font-semibold text-white mt-0.5"><i class="fa-solid fa-layer-group text-github-accent"></i> 3 Jobs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Pipeline Visualizer Tabs -->
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-diagram-project text-github-accent"></i> Pipeline Graph & Dependency Tree
+            </h2>
+            <div class="bg-github-card border border-github-border p-1 rounded-lg flex space-x-1">
+                <button onclick="switchView('visual')" id="btnVisual" class="px-3 py-1.5 rounded text-xs font-medium transition-all bg-github-border text-white">
+                    <i class="fa-solid fa-cubes mr-1"></i> Visual Cards
+                </button>
+                <button onclick="switchView('terminal')" id="btnTerminal" class="px-3 py-1.5 rounded text-xs font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-terminal mr-1"></i> Console Log
+                </button>
+            </div>
+        </div>
+
+        <!-- VISUAL CARDS VIEW -->
+        <div id="visualView" class="space-y-6">
+            
+            <!-- Dependency Flow Line Diagram (Desktop) -->
+            <div class="hidden lg:flex items-center justify-center gap-6 py-4 bg-github-card/40 border border-github-border/60 rounded-xl px-6">
+                <!-- Job 1 -->
+                <div class="flex items-center gap-3 bg-github-dark border border-github-border px-4 py-3 rounded-lg shadow">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-mono">Job 1</div>
+                        <div class="font-semibold text-sm text-white">greet</div>
+                    </div>
+                </div>
+
+                <div class="flex-1 h-0.5 bg-github-border relative">
+                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 border-t-2 border-r-2 border-github-border rotate-45"></div>
+                </div>
+
+                <!-- Job 2 -->
+                <div class="flex items-center gap-3 bg-github-dark border border-github-border px-4 py-3 rounded-lg shadow">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-mono">Job 2 (needs: greet)</div>
+                        <div class="font-semibold text-sm text-white">family-details</div>
+                    </div>
+                </div>
+
+                <div class="flex-1 h-0.5 bg-github-border relative">
+                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 border-t-2 border-r-2 border-github-border rotate-45"></div>
+                </div>
+
+                <!-- Job 3 -->
+                <div class="flex items-center gap-3 bg-github-dark border border-github-border px-4 py-3 rounded-lg shadow">
+                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 font-mono">Job 3 (needs: family, greet)</div>
+                        <div class="font-semibold text-sm text-white">Address</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Job Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- JOB 1: GREET -->
+                <div class="bg-github-card border border-github-border rounded-xl overflow-hidden flex flex-col justify-between hover:border-github-accent transition-all duration-300">
+                    <div>
+                        <!-- Job Header -->
+                        <div class="bg-github-dark px-5 py-3.5 border-b border-github-border flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="text-emerald-400 text-sm"><i class="fa-solid fa-circle-check"></i></div>
+                                <span class="font-bold text-white font-mono text-sm">greet</span>
+                            </div>
+                            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">Success</span>
+                        </div>
+                        <!-- Job Content -->
+                        <div class="p-5 space-y-4">
+                            <div class="text-xs text-slate-400 flex items-center justify-between">
+                                <span>Runs-on: <b class="text-white font-mono">ubuntu-latest</b></span>
+                                <span>1s</span>
+                            </div>
+                            <div class="bg-github-dark border border-github-border rounded-lg p-3.5 space-y-2">
+                                <div class="text-xs text-slate-400 font-mono flex items-center gap-1.5">
+                                    <i class="fa-solid fa-terminal text-github-accent"></i> Greeting From
+                                </div>
+                                <div class="bg-github-card p-3 rounded border border-github-border/80 text-github-accent font-mono text-sm leading-relaxed">
+                                    "I'm Avi Patel from My side Welcome to in Avi Techonology"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 bg-github-dark/50 border-t border-github-border text-xs text-slate-400 flex items-center justify-between">
+                        <span>Dependencies: None</span>
+                        <span class="text-emerald-400 font-medium">Completed</span>
+                    </div>
+                </div>
+
+                <!-- JOB 2: FAMILY-DETAILS -->
+                <div class="bg-github-card border border-github-border rounded-xl overflow-hidden flex flex-col justify-between hover:border-github-accent transition-all duration-300">
+                    <div>
+                        <!-- Job Header -->
+                        <div class="bg-github-dark px-5 py-3.5 border-b border-github-border flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="text-emerald-400 text-sm"><i class="fa-solid fa-circle-check"></i></div>
+                                <span class="font-bold text-white font-mono text-sm">family-details</span>
+                            </div>
+                            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">Success</span>
+                        </div>
+                        <!-- Job Content -->
+                        <div class="p-5 space-y-4">
+                            <div class="text-xs text-slate-400 flex items-center justify-between">
+                                <span>Runs-on: <b class="text-white font-mono">ubuntu-latest</b></span>
+                                <span>2s</span>
+                            </div>
+                            <div class="space-y-3">
+                                <!-- Father Name Step -->
+                                <div class="bg-github-dark border border-github-border rounded-lg p-3">
+                                    <div class="text-xs text-slate-400 font-mono mb-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-user-tie text-blue-400"></i> Father Name
+                                    </div>
+                                    <div class="text-white font-medium text-sm pl-4 border-l-2 border-blue-400">
+                                        Ashish Kumar
+                                    </div>
+                                </div>
+                                <!-- Mother Name Step -->
+                                <div class="bg-github-dark border border-github-border rounded-lg p-3">
+                                    <div class="text-xs text-slate-400 font-mono mb-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-user-nurse text-pink-400"></i> Mother Name
+                                    </div>
+                                    <div class="text-white font-medium text-sm pl-4 border-l-2 border-pink-400">
+                                        Suman Patel
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 bg-github-dark/50 border-t border-github-border text-xs text-slate-400 flex items-center justify-between">
+                        <span>Needs: <code class="text-github-accent">[greet]</code></span>
+                        <span class="text-emerald-400 font-medium">Completed</span>
+                    </div>
+                </div>
+
+                <!-- JOB 3: ADDRESS -->
+                <div class="bg-github-card border border-github-border rounded-xl overflow-hidden flex flex-col justify-between hover:border-github-accent transition-all duration-300">
+                    <div>
+                        <!-- Job Header -->
+                        <div class="bg-github-dark px-5 py-3.5 border-b border-github-border flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="text-emerald-400 text-sm"><i class="fa-solid fa-circle-check"></i></div>
+                                <span class="font-bold text-white font-mono text-sm">Address</span>
+                            </div>
+                            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">Success</span>
+                        </div>
+                        <!-- Job Content -->
+                        <div class="p-5 space-y-3">
+                            <div class="text-xs text-slate-400 flex items-center justify-between mb-1">
+                                <span>Runs-on: <b class="text-white font-mono">ubuntu-latest</b></span>
+                                <span>2s</span>
+                            </div>
+                            
+                            <!-- Address Details List -->
+                            <div class="space-y-2 font-mono text-xs">
+                                <div class="bg-github-dark/80 p-2.5 rounded border border-github-border flex items-start gap-2">
+                                    <i class="fa-solid fa-house text-amber-400 mt-0.5"></i>
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px]">Village Name</span>
+                                        <span class="text-white">Balkaranpur Madhav Nagar Bigahia</span>
+                                    </div>
+                                </div>
+                                <div class="bg-github-dark/80 p-2.5 rounded border border-github-border flex items-start gap-2">
+                                    <i class="fa-solid fa-envelope text-blue-400 mt-0.5"></i>
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px]">Post Office</span>
+                                        <span class="text-white">Madhav Nagar Bigahia</span>
+                                    </div>
+                                </div>
+                                <div class="bg-github-dark/80 p-2.5 rounded border border-github-border flex items-start gap-2">
+                                    <i class="fa-solid fa-city text-purple-400 mt-0.5"></i>
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px]">District Name</span>
+                                        <span class="text-white font-semibold text-github-accent">Prayagraj</span>
+                                    </div>
+                                </div>
+                                <div class="bg-github-dark/80 p-2.5 rounded border border-github-border flex items-start gap-2">
+                                    <i class="fa-solid fa-map-location-dot text-emerald-400 mt-0.5"></i>
+                                    <div>
+                                        <span class="text-slate-400 block text-[10px]">State Name</span>
+                                        <span class="text-white font-semibold text-emerald-400">Uttar Pradesh</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3 bg-github-dark/50 border-t border-github-border text-xs text-slate-400 flex items-center justify-between">
+                        <span>Needs: <code class="text-github-accent">[family-details, greet]</code></span>
+                        <span class="text-emerald-400 font-medium">Completed</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TERMINAL / CONSOLE VIEW (Hidden by default) -->
+        <div id="terminalView" class="hidden space-y-4">
+            <div class="bg-github-dark border border-github-border rounded-xl overflow-hidden shadow-2xl font-mono text-sm">
+                <!-- Terminal Titlebar -->
+                <div class="bg-github-card px-4 py-3 border-b border-github-border flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-xs text-slate-400 ml-2">bash - ashish-avi workflow execution</span>
+                    </div>
+                    <button onclick="copyTerminal()" class="text-slate-400 hover:text-white text-xs bg-github-border/40 px-2.5 py-1 rounded transition-all">
+                        <i class="fa-regular fa-copy mr-1"></i> Copy Log
+                    </button>
+                </div>
+                <!-- Terminal Output Body -->
+                <div id="terminalBody" class="p-5 text-slate-300 space-y-3 max-h-[500px] overflow-y-auto text-xs md:text-sm">
+                    <div class="text-slate-500"># Trigger: workflow_dispatch received on branch main</div>
+                    <div class="text-blue-400">=== Job 1: greet (ubuntu-latest) ===</div>
+                    <div class="text-slate-300 pl-4">→ Setup job environment</div>
+                    <div class="text-slate-300 pl-4">→ Run: echo "I'm Avi Patel from My side Welcome to in Avi Techonology"</div>
+                    <div class="text-emerald-400 pl-4 font-bold">I'm Avi Patel from My side Welcome to in Avi Techonology</div>
+                    <div class="text-slate-500">Job greet completed successfully.</div>
+                    <br>
+                    <div class="text-blue-400">=== Job 2: family-details (ubuntu-latest) [waiting for greet] ===</div>
+                    <div class="text-slate-300 pl-4">→ Run: echo "Ashish Kumar"</div>
+                    <div class="text-emerald-400 pl-4 font-bold">Father Name: Ashish Kumar</div>
+                    <div class="text-slate-300 pl-4">→ Run: echo "Suman Patel"</div>
+                    <div class="text-emerald-400 pl-4 font-bold">Mother Name: Suman Patel</div>
+                    <div class="text-slate-500">Job family-details completed successfully.</div>
+                    <br>
+                    <div class="text-blue-400">=== Job 3: Address (ubuntu-latest) [waiting for family-details, greet] ===</div>
+                    <div class="text-slate-300 pl-4">→ Village: Balkaranpur Madhav Nagar Bigahia</div>
+                    <div class="text-slate-300 pl-4">→ Post Office: Madhav Nagar Bigahia</div>
+                    <div class="text-slate-300 pl-4">→ District: Prayagraj</div>
+                    <div class="text-slate-300 pl-4">→ State: Uttar Pradesh</div>
+                    <div class="text-emerald-400 pl-4 font-bold">Address verified & printed successfully.</div>
+                    <br>
+                    <div class="text-emerald-400 font-bold">✨ All 3 jobs completed successfully in 8s.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw YAML Config Section -->
+        <div class="mt-12 bg-github-card border border-github-border rounded-xl overflow-hidden">
+            <div class="bg-github-dark px-5 py-3.5 border-b border-github-border flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-sm font-semibold">
+                    <i class="fa-solid fa-file-code text-github-accent"></i>
+                    <span>ashish-avi.yml Source Configuration</span>
+                </div>
+                <button onclick="copyYaml()" class="text-xs bg-github-border hover:bg-github-border/80 text-white px-3 py-1.5 rounded transition-all flex items-center gap-1.5">
+                    <i class="fa-regular fa-copy"></i> Copy YAML
+                </button>
+            </div>
+            <pre class="p-5 font-mono text-xs md:text-sm text-slate-300 overflow-x-auto leading-relaxed bg-[#0b0f17]"><code><span class="text-purple-400">name</span>: ashish-avi
+
+<span class="text-purple-400">on</span>:
+  <span class="text-blue-400">workflow_dispatch</span>:
+
+<span class="text-purple-400">jobs</span>:
+  <span class="text-blue-400">greet</span>:
+    <span class="text-purple-400">runs-on</span>: ubuntu-latest
+    <span class="text-purple-400">steps</span>:
+      - <span class="text-purple-400">name</span>: Greeting From
+        <span class="text-purple-400">run</span>: echo "I'm Avi Patel from My side Welcome to in Avi Techonology"
+
+  <span class="text-blue-400">family-details</span>:
+    <span class="text-purple-400">needs</span>: [greet]
+    <span class="text-purple-400">runs-on</span>: ubuntu-latest
+    <span class="text-purple-400">steps</span>:
+      - <span class="text-purple-400">name</span>: Father Name
+        <span class="text-purple-400">run</span>: echo "Ashish Kumar"
+      - <span class="text-purple-400">name</span>: Mother Name
+        <span class="text-purple-400">run</span>: echo "Suman Patel"
+
+  <span class="text-blue-400">Address</span>:
+    <span class="text-purple-400">needs</span>: [family-details, greet]
+    <span class="text-purple-400">runs-on</span>: ubuntu-latest
+    <span class="text-purple-400">steps</span>:
+      - <span class="text-purple-400">name</span>: Village Name
+        <span class="text-purple-400">run</span>: echo "Balkaranpur Madhav Nagar Bigahia"
+      - <span class="text-purple-400">name</span>: Post Office
+        <span class="text-purple-400">run</span>: echo "Madhav Nagar Bigahia"
+      - <span class="text-purple-400">name</span>: District Name
+        <span class="text-purple-400">run</span>: echo "Prayagraj"
+      - <span class="text-purple-400">name</span>: State Name
+        <span class="text-purple-400">run</span>: echo "Uttar Pradesh"</code></pre>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-github-border bg-github-dark py-6 px-4 text-center text-xs text-slate-500">
+        <p>Built with GitHub Actions Theme & Tailwind CSS • Visualizing workflow <span class="text-slate-400 font-mono">ashish-avi</span></p>
+    </footer>
+
+    <!-- Interactive JavaScript -->
+    <script>
+        function switchView(view) {
+            const visualView = document.getElementById('visualView');
+            const terminalView = document.getElementById('terminalView');
+            const btnVisual = document.getElementById('btnVisual');
+            const btnTerminal = document.getElementById('btnTerminal');
+
+            if (view === 'visual') {
+                visualView.classList.remove('hidden');
+                terminalView.classList.add('hidden');
+                btnVisual.className = "px-3 py-1.5 rounded text-xs font-medium transition-all bg-github-border text-white";
+                btnTerminal.className = "px-3 py-1.5 rounded text-xs font-medium transition-all text-slate-400 hover:text-white";
+            } else {
+                visualView.classList.add('hidden');
+                terminalView.classList.remove('hidden');
+                btnTerminal.className = "px-3 py-1.5 rounded text-xs font-medium transition-all bg-github-border text-white";
+                btnVisual.className = "px-3 py-1.5 rounded text-xs font-medium transition-all text-slate-400 hover:text-white";
+            }
+        }
+
+        function triggerWorkflow() {
+            const btn = document.getElementById('reRunBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Triggering...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Triggered!';
+                btn.classList.remove('bg-github-success', 'hover:bg-github-successHover');
+                btn.classList.add('bg-blue-600');
+
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-blue-600');
+                    btn.classList.add('bg-github-success', 'hover:bg-github-successHover');
+                    btn.disabled = false;
+                }, 2000);
+            }, 1000);
+        }
+
+        function copyYaml() {
+            const yamlText = `name: ashish-avi
+
+on:
+    workflow_dispatch:
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greeting From
+        run: echo "I'm Avi Patel from My side Welcome to in Avi Techonology"
+
+  family-details:
+    needs: [greet]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Father Name
+        run: echo "Ashish Kumar"
+      - name: Mother Name
+        run: echo "Suman Patel"
+
+  Address:
+    needs: [family-details,greet]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Village Name
+        run: echo " Balkaranpur Madhav Nagar Bigahia"
+      - name: Post Office
+        run: echo "Madhav Nagar Bigahia"
+      - name: District Name
+        run: echo "Prayagraj"
+      - name: State Name
+        run: echo "Uttar Pradesh"`;
+
+            document.execCommand('copy');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(yamlText);
+            }
+            alertBox("YAML configuration copied to clipboard!");
+        }
+
+        function copyTerminal() {
+            alertBox("Terminal logs copied to clipboard!");
+        }
+
+        function alertBox(message) {
+            const div = document.createElement('div');
+            div.className = "fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-xl text-sm flex items-center gap-2 animate-bounce";
+            div.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            document.body.appendChild(div);
+            setTimeout(() => {
+                div.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
